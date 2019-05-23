@@ -1,0 +1,558 @@
+buildCmd: cd ./soltix; mvn -e -X -Dmaven.test.skip=true compile
+testCmd: true
+lineLength: 4096
+skipVerification: true
+cbmcArguments:
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+phases:
+  -
+  #Phase 0 PRETTY AND SIMPLE - Simple models, quick cover, pretty Tests, Do Not Test Private Method Directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [ private ]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # Instrument the file as opposed to the function only
+      cover-only: file
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+  -
+  #Phase 1 PRETTY AND COMPLEX - Standard models, longer run time, pretty tests, Do Not Test Private Method Directly
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: false
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [ private ]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+  #Phase 2 Simple and Private Directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+      # If the logs contain output of the following then proceed to phase X
+    nextPhase:
+      # If the function is not analysable then do not pass onto the next phase
+      not_analyzed: null
+  -
+  #Phase 3 Complex and Private Directly
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library.
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 3000
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+  -
+  #Phase 4 EXCEPTIONS
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library.
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+  -
+    #PHASE 5 Big numbers and less contraints on inputs 
+    timeout: 300
+    cbmcArguments:
+      # Use the standard models library.
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: false
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 100
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 6
+units:
+# Target TGF: 1440.0
+#  >methods=4
+#  >complexity=636
+#  >construction=18.0
+#  >dependency=0.75
+ - target:
+   - dir: .
+     file: soltix/target/classes/soltix/Main.class
+     sourceDir: .
+     sourceFile: soltix/src/main/java/soltix/Main.java
+   - dir: soltix/target/classes
+     file: soltix/profiling/EventLogComparator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/profiling/EventLogComparator.java
+   - dir: .
+     file: soltix/target/classes/soltix/Driver.class
+     sourceDir: .
+     sourceFile: soltix/src/main/java/soltix/Driver.java
+   - dir: soltix/target/classes
+     file: soltix/synthesis/FunctionGenerator$FunctionType.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/synthesis/FunctionGenerator.java
+# Target TGF: 577.514285714
+#  >methods=17
+#  >complexity=1309
+#  >construction=4.05
+#  >dependency=15.0
+ - target:
+   - dir: .
+     file: soltix/target/classes/soltix/ASTEditor.class
+     sourceDir: .
+     sourceFile: soltix/src/main/java/soltix/ASTEditor.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTIdentifier.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTIdentifier.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTContractDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTContractDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTFunctionDefinition$SpecialFunction.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTFunctionDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/interpretation/values/Value.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/values/Value.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVerbatimText.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVerbatimText.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTWhileStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTWhileStatement.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTParameterList.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTParameterList.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTEmitStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTEmitStatement.java
+   - dir: soltix/target/classes
+     file: soltix/ast/FunctionScope.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/FunctionScope.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTEventDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTEventDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTFunctionCall.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTFunctionCall.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTBlock.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTBlock.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTIfStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTIfStatement.java
+   - dir: soltix/target/classes
+     file: soltix/interpretation/variables/Variable.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/variables/Variable.java
+   - dir: soltix/target/classes
+     file: soltix/synthesis/ValueGenerator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/synthesis/ValueGenerator.java
+   - dir: soltix/target/classes
+     file: soltix/profiling/ProfilingEvent.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/profiling/ProfilingEvent.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTDoWhileStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTDoWhileStatement.java
+   - dir: soltix/target/classes
+     file: soltix/ast/AST.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/AST.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTForStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTForStatement.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTNode.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTNode.java
+   - dir: soltix/target/classes
+     file: soltix/interpretation/expressions/Expression.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/expressions/Expression.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVariableDeclaration.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVariableDeclaration.java
+   - dir: soltix/target/classes
+     file: soltix/ast/IControlStructure.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/IControlStructure.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTIndexAccess.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTIndexAccess.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTStructDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTStructDefinition.java
+# Target TGF: 492.75
+#  >methods=3
+#  >complexity=219
+#  >construction=9.0
+#  >dependency=0.25
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/profiling/EventLogComparator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/profiling/EventLogComparator.java
+# Target TGF: 1020.53571429
+#  >methods=10
+#  >complexity=580
+#  >construction=15.1071428571
+#  >dependency=8.0
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/output/Emitter.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/output/Emitter.java
+   - dir: soltix/target/classes
+     file: soltix/output/CodeOutputWriter.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/output/CodeOutputWriter.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTExpressionStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTExpressionStatement.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTAssignment.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTAssignment.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTIfStatement.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTIfStatement.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTNode.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTNode.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTLiteral.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTLiteral.java
+   - dir: soltix/target/classes
+     file: soltix/ast/AST.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/AST.java
+# Target TGF: 462.876923077
+#  >methods=5
+#  >complexity=509
+#  >construction=3.57032967033
+#  >dependency=4.0
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/synthesis/StateEventOutputGenerator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/synthesis/StateEventOutputGenerator.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTMapping.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTMapping.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTFunctionDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTFunctionDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVerbatimText.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVerbatimText.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTNode.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTNode.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTParameterList.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTParameterList.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVariableDeclaration.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVariableDeclaration.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTUserDefinedTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTUserDefinedTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTArrayTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTArrayTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTBlock.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTBlock.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTContractDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTContractDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTStructDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTStructDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/interpretation/Type.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/Type.java
+   - dir: soltix/target/classes
+     file: soltix/ast/AST.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/AST.java
+# Target TGF: 569.764285714
+#  >methods=12
+#  >complexity=401
+#  >construction=17.4696428571
+#  >dependency=11.0
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/interpretation/TypeContainer.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/TypeContainer.java
+   - dir: soltix/target/classes
+     file: soltix/synthesis/StructTypeGenerator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/synthesis/StructTypeGenerator.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTUserDefinedTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTUserDefinedTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/util/RandomNumbers.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/util/RandomNumbers.java
+   - dir: soltix/target/classes
+     file: soltix/util/WeightedRandomChoice.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/util/WeightedRandomChoice.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTStructDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTStructDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTElementaryTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTElementaryTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/AST.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/AST.java
+# Target TGF: 420.0
+#  >methods=3
+#  >complexity=98
+#  >construction=18.0
+#  >dependency=0.833333333333
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/util/Hash.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/util/Hash.java
+# Target TGF: 1205.0
+#  >methods=7
+#  >complexity=189
+#  >construction=10.0
+#  >dependency=2.0
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTLiteral.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTLiteral.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTLiteral$LiteralType.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTLiteral.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTNode.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTNode.java
+# Target TGF: 687.392857143
+#  >methods=40
+#  >complexity=1202
+#  >construction=3.89285714286
+#  >dependency=7.0
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/interpretation/expressions/Expression.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/expressions/Expression.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTIdentifier.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTIdentifier.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTUnaryOperation$Operator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTUnaryOperation.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVariableDeclaration.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVariableDeclaration.java
+   - dir: soltix/target/classes
+     file: soltix/interpretation/values/Value.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/values/Value.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVerbatimText.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVerbatimText.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTNode.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTNode.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTElementaryTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTElementaryTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTFunctionCall.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTFunctionCall.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTArrayTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTArrayTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTBinaryOperation$Operator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTBinaryOperation.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTAssignment$Operator.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTAssignment.java
+   - dir: soltix/target/classes
+     file: soltix/interpretation/Type.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/Type.java
+# Target TGF: 699.107142857
+#  >methods=17
+#  >complexity=519
+#  >construction=24.9428571429
+#  >dependency=14.0
+ - target:
+   - dir: soltix/target/classes
+     file: soltix/interpretation/Type.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/interpretation/Type.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTElementaryTypeName$ElementaryType.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTElementaryTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTVariableDeclaration.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTVariableDeclaration.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTNode.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTNode.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTStructDefinition.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTStructDefinition.java
+   - dir: soltix/target/classes
+     file: soltix/ast/ASTElementaryTypeName.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/ASTElementaryTypeName.java
+   - dir: soltix/target/classes
+     file: soltix/ast/AST.class
+     sourceDir: soltix/src/main/java
+     sourceFile: soltix/ast/AST.java
